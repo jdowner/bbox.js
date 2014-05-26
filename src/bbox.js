@@ -137,4 +137,54 @@ var bbox = {
 
     return soln;
   },
+
+  bezier_point: function(bezier, t){
+    var s = 1 - t;
+    var a = s * s * s;
+    var b = 3 * s * s * t;
+    var c = 3 * s * t * t;
+    var d = t * t * t;
+
+    var x = a * bezier.x0 + b * bezier.x1 + c * bezier.x2 + d * bezier.x3;
+    var y = a * bezier.y0 + b * bezier.y1 + c * bezier.y2 + d * bezier.y3;
+
+    return {x: x, y: y}
+  },
+
+  cubic_bezier: function(bezier){
+    // The end points of the curve may define the bounding box if there are no
+    // inflection points for t in (0,1) so add them to the list of critical
+    // points.
+    var critical = [0, 1];
+
+    // Get the inflection points for the bezier curve and add them to the
+    // critical points
+    var inflections = bbox.inflection_points(bezier);
+    for(var i = 0; i < inflections.length; i++){
+      critical.push(inflections[i]);
+    }
+
+    // Find the maximum/minimum for each co-ordinate. These will define the
+    // edges of the bounding box.
+    var p = bbox.bezier_point(bezier, critical[0]);
+    var minx = p.x;
+    var maxx = p.x;
+    var miny = p.y;
+    var maxy = p.y;
+    for(var i = 1; i < critical.length; i++){
+      p = bbox.bezier_point(bezier, critical[i]);
+      minx = Math.min(minx, p.x);
+      maxx = Math.max(maxx, p.x);
+      miny = Math.min(miny, p.y);
+      maxy = Math.max(maxy, p.y);
+    }
+
+    // return the bounding box
+    return {
+      x: minx,
+      y: miny,
+      w: maxx - minx,
+      h: maxy - miny
+    };
+  }
 }

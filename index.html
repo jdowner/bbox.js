@@ -129,5 +129,108 @@
       ok(Math.abs(bbox.bezier_derivative(bezier, pts[1]).dx) < 1.0e-8);
       ok(Math.abs(bbox.bezier_derivative(bezier, pts[2]).dy) < 1.0e-8);
     })
+
+
+    module("cubic bezier bounding box")
+
+    test("#1", function(){
+      var bezier = {
+        x0: 0,
+        y0: 0,
+        x1: 0,
+        y1: 1,
+        x2: 1,
+        y2: 1,
+        x3: 1,
+        y3: 0
+      };
+
+      var box = bbox.cubic_bezier(bezier);
+
+      equal(box.x, 0);
+      equal(box.y, 0);
+      equal(box.w, 1);
+      equal(box.h, 0.75);
+    })
+
+    test("#1 - scaled", function(){
+      var bezier = {
+        x0: 0,
+        y0: 0,
+        x1: 0,
+        y1: 2,
+        x2: 2,
+        y2: 2,
+        x3: 2,
+        y3: 0
+      };
+
+      var box = bbox.cubic_bezier(bezier);
+
+      equal(box.x, 0);
+      equal(box.y, 0);
+      equal(box.w, 2);
+      equal(box.h, 1.5);
+    })
+
+    test("#1 - shifted", function(){
+      var bezier = {
+        x0: 5,
+        y0: -1,
+        x1: 5,
+        y1: 0,
+        x2: 6,
+        y2: 0,
+        x3: 6,
+        y3: -1
+      };
+
+      var box = bbox.cubic_bezier(bezier);
+
+      equal(box.x, 5);
+      equal(box.y, -1);
+      equal(box.w, 1);
+      equal(box.h, 0.75);
+    })
+
+    test("#2", function(){
+      var bezier = {
+        x0: 3,
+        y0: 4,
+        x1: 2,
+        y1: 5,
+        x2: 5,
+        y2: 5,
+        x3: 4,
+        y3: 4
+      };
+
+      var pts = bbox.inflection_points(bezier);
+
+      equal(pts.length, 3);
+
+      pts.push(0);
+      pts.push(1);
+
+      var p = bbox.bezier_point(bezier, pts[0]);
+      var maxx = p.x;
+      var minx = p.x;
+      var maxy = p.y;
+      var miny = p.y;
+      for(var i = 1; i < pts.length; i++){
+        var p = bbox.bezier_point(bezier, pts[i]);
+        maxx = Math.max(maxx, p.x);
+        minx = Math.min(minx, p.x);
+        maxy = Math.max(maxy, p.y);
+        miny = Math.min(miny, p.y);
+      }
+
+      var box = bbox.cubic_bezier(bezier);
+
+      equal(box.x, minx);
+      equal(box.y, miny);
+      equal(box.w, maxx - minx);
+      equal(box.h, maxy - miny);
+    })
   </script>
 </html>

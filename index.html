@@ -83,7 +83,7 @@
         y3: 0
       };
 
-      var pts = bbox.inflection_points(bezier)
+      var pts = bbox.inflection_points(bezier);
 
       equal(pts.length, 1);
       ok(Math.abs(bbox.bezier_derivative(bezier, pts[0]).dy) < 1.0e-8);
@@ -101,7 +101,7 @@
         y3: 0
       };
 
-      var pts = bbox.inflection_points(bezier)
+      var pts = bbox.inflection_points(bezier);
 
       equal(pts.length, 2);
 
@@ -121,7 +121,7 @@
         y3: 0
       };
 
-      var pts = bbox.inflection_points(bezier)
+      var pts = bbox.inflection_points(bezier);
 
       equal(pts.length, 3);
 

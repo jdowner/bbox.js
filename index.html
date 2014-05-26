@@ -23,7 +23,7 @@
       var b = 2;
       var c = 1;
 
-      var roots = bbox.qroots(a, b, c);
+      var roots = bbox.utils.qroots(a, b, c);
 
       equal(1, roots.length);
       equal(-1, roots[0]);
@@ -35,7 +35,7 @@
       var b = 3;
       var c = 2;
 
-      var roots = bbox.qroots(a, b, c);
+      var roots = bbox.utils.qroots(a, b, c);
 
       equal(2, roots.length);
       equal(-2, roots[0]);
@@ -48,7 +48,7 @@
       var b = -1;
       var c = -2;
 
-      var roots = bbox.qroots(a, b, c);
+      var roots = bbox.utils.qroots(a, b, c);
 
       equal(2, roots.length);
       equal(-1, roots[0]);
@@ -61,7 +61,7 @@
       var b = -1;
       var c = -1;
 
-      var roots = bbox.qroots(a, b, c);
+      var roots = bbox.utils.qroots(a, b, c);
 
       equal(2, roots.length);
       equal(-0.5, roots[0]);
@@ -83,10 +83,10 @@
         y3: 0
       };
 
-      var pts = bbox.inflection_points(bezier);
+      var pts = bbox.utils.cubic_bezier_inflections(bezier);
 
       equal(pts.length, 1);
-      ok(Math.abs(bbox.bezier_derivative(bezier, pts[0]).dy) < 1.0e-8);
+      ok(Math.abs(bbox.utils.cubic_bezier_derivative(bezier, pts[0]).dy) < 1.0e-8);
     })
 
     test("#2", function(){
@@ -101,12 +101,12 @@
         y3: 0
       };
 
-      var pts = bbox.inflection_points(bezier);
+      var pts = bbox.utils.cubic_bezier_inflections(bezier);
 
       equal(pts.length, 2);
 
-      ok(Math.abs(bbox.bezier_derivative(bezier, pts[0]).dy) < 1.0e-8);
-      ok(Math.abs(bbox.bezier_derivative(bezier, pts[1]).dy) < 1.0e-8);
+      ok(Math.abs(bbox.utils.cubic_bezier_derivative(bezier, pts[0]).dy) < 1.0e-8);
+      ok(Math.abs(bbox.utils.cubic_bezier_derivative(bezier, pts[1]).dy) < 1.0e-8);
     })
 
     test("#3", function(){
@@ -121,13 +121,13 @@
         y3: 0
       };
 
-      var pts = bbox.inflection_points(bezier);
+      var pts = bbox.utils.cubic_bezier_inflections(bezier);
 
       equal(pts.length, 3);
 
-      ok(Math.abs(bbox.bezier_derivative(bezier, pts[0]).dy) < 1.0e-8);
-      ok(Math.abs(bbox.bezier_derivative(bezier, pts[1]).dx) < 1.0e-8);
-      ok(Math.abs(bbox.bezier_derivative(bezier, pts[2]).dy) < 1.0e-8);
+      ok(Math.abs(bbox.utils.cubic_bezier_derivative(bezier, pts[0]).dy) < 1.0e-8);
+      ok(Math.abs(bbox.utils.cubic_bezier_derivative(bezier, pts[1]).dx) < 1.0e-8);
+      ok(Math.abs(bbox.utils.cubic_bezier_derivative(bezier, pts[2]).dy) < 1.0e-8);
     })
 
 
@@ -205,20 +205,20 @@
         y3: 4
       };
 
-      var pts = bbox.inflection_points(bezier);
+      var pts = bbox.utils.cubic_bezier_inflections(bezier);
 
       equal(pts.length, 3);
 
       pts.push(0);
       pts.push(1);
 
-      var p = bbox.bezier_point(bezier, pts[0]);
+      var p = bbox.utils.cubic_bezier_point(bezier, pts[0]);
       var maxx = p.x;
       var minx = p.x;
       var maxy = p.y;
       var miny = p.y;
       for(var i = 1; i < pts.length; i++){
-        var p = bbox.bezier_point(bezier, pts[i]);
+        var p = bbox.utils.cubic_bezier_point(bezier, pts[i]);
         maxx = Math.max(maxx, p.x);
         minx = Math.min(minx, p.x);
         maxy = Math.max(maxy, p.y);
@@ -231,6 +231,49 @@
       equal(box.y, miny);
       equal(box.w, maxx - minx);
       equal(box.h, maxy - miny);
+    })
+
+
+    module("line bounding box")
+
+    test("degenerate - horizontal", function(){
+      var line = {x0: 0, x1: 1, y0: 0, y1: 0};
+      var box = bbox.line(line);
+
+      equal(box.x, 0);
+      equal(box.y, 0);
+      equal(box.w, 1);
+      equal(box.h, 0);
+    })
+
+    test("degenerate - vertical", function(){
+      var line = {x0: 0, x1: 0, y0: 0, y1: 1};
+      var box = bbox.line(line);
+
+      equal(box.x, 0);
+      equal(box.y, 0);
+      equal(box.w, 0);
+      equal(box.h, 1);
+    })
+
+    test("positive", function(){
+      var line = {x0: -1, x1: 5, y0: -2, y1: 1};
+      var box = bbox.line(line);
+
+      equal(box.x, -1);
+      equal(box.y, -2);
+      equal(box.w, 6);
+      equal(box.h, 3);
+    })
+
+    test("negative", function(){
+      var line = {x0: -1, x1: 5, y0: 1, y1: -2};
+      var box = bbox.line(line);
+
+      equal(box.x, -1);
+      equal(box.y, -2);
+      equal(box.w, 6);
+      equal(box.h, 3);
     })
   </script>
 </html>

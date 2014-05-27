@@ -324,5 +324,148 @@
       equal(boxA.w, boxB.w);
       equal(boxA.h, boxB.h);
     })
+
+
+    module("parser")
+
+    test("degenerate - move", function(){
+      var box = bbox.path( 'M 230 -1031');
+      ok(box == null);
+    })
+
+    test("degenerate - lines", function(){
+      var path = 'M 230 -1031 C 232 -1032, 235 -1032, 238 -1032 C 245 -1032, 251 -1027, 259 -1014 C 330 -906, 367 -782, 367 -662 C 367 -641, 367 -621, 364 -602 C 352 -488, 304 -384, 232 -317 C 155 -245, 103 -187, 57 -120 C 31 -84, 6 -40, -1 -18 C -4 -11, -12 -4, -19 -4 L -21 -4 L -21 -159 L -21 -315 L -16 -315 C 10 -315, 62 -324, 96 -335 C 227 -380, 315 -527, 315 -695 C 315 -709, 314 -724, 313 -738 C 304 -825, 273 -916, 224 -991 C 219 -999, 216 -1007, 216 -1013 C 216 -1021, 220 -1028, 230 -1031';
+
+      var boxA = bbox.path( 'L 0 1');
+      equal(boxA.x, 0);
+      equal(boxA.y, 0);
+      equal(boxA.w, 0);
+      equal(boxA.h, 1);
+
+      var boxB = bbox.path( 'L 1 0');
+      equal(boxB.x, 0);
+      equal(boxB.y, 0);
+      equal(boxB.w, 1);
+      equal(boxB.h, 0);
+    })
+
+    test("lines", function(){
+      var boxA = bbox.path('L 1 1');
+
+      equal(boxA.x, 0);
+      equal(boxA.y, 0);
+      equal(boxA.h, 1);
+      equal(boxA.w, 1);
+
+      var boxB = bbox.path('L -1 -1');
+
+      equal(boxB.x, -1);
+      equal(boxB.y, -1);
+      equal(boxB.h, 1);
+      equal(boxB.w, 1);
+
+      var boxC = bbox.path('M -1 -1 L 2 3');
+
+      equal(boxC.x, -1);
+      equal(boxC.y, -1);
+      equal(boxC.h, 4);
+      equal(boxC.w, 3);
+
+      var boxD = bbox.path('M -1 -1 L 2 3 L 0 0');
+
+      equal(boxD.x, -1);
+      equal(boxD.y, -1);
+      equal(boxD.h, 4);
+      equal(boxD.w, 3);
+
+      var boxE = bbox.path('M -1 -1 L 2 3 L 0 4');
+
+      equal(boxE.x, -1);
+      equal(boxE.y, -1);
+      equal(boxE.h, 5);
+      equal(boxE.w, 3);
+
+      var boxF = bbox.path('L 1 0 L 0 1 L 1 1');
+
+      equal(boxF.x, 0);
+      equal(boxF.y, 0);
+      equal(boxF.h, 1);
+      equal(boxF.w, 1);
+    })
+
+    test("cubic", function(){
+      var box = bbox.path('C 1 0 0 1 0 0');
+
+      var bezier = {
+        x0: 0,
+        y0: 0,
+        x1: 1,
+        y1: 0,
+        x2: 0,
+        y2: 1,
+        x3: 0,
+        y3: 0
+      };
+
+      var minx = 0;
+      var maxx = 0;
+      var miny = 0;
+      var maxy = 0;
+
+      inflections = bbox.utils.cubic_bezier_inflections(bezier);
+
+      for(var i = 0; i < inflections.length; i++){
+        var p = bbox.utils.cubic_bezier_point(bezier, inflections[i]);
+        minx = Math.min(minx, p.x);
+        maxx = Math.max(maxx, p.x);
+        miny = Math.min(miny, p.y);
+        maxy = Math.max(maxy, p.y);
+      }
+
+      equal(box.x, minx);
+      equal(box.y, miny);
+      equal(box.w, maxx - minx);
+      equal(box.h, maxy - miny);
+    })
+
+    test("line+cubic", function(){
+      var box = bbox.path('M -2 -1 L 0 0 C 1 0 0 1 0 0');
+
+      // Define the Bezier part of the curve.
+      var bezier = {
+        x0: 0,
+        y0: 0,
+        x1: 1,
+        y1: 0,
+        x2: 0,
+        y2: 1,
+        x3: 0,
+        y3: 0
+      };
+
+      // Place the minimum x and y at the initial position to account for the
+      // start of the line.
+      var minx = -2;
+      var maxx = 0;
+      var miny = -1;
+      var maxy = 0;
+
+      // Find the inflection points of the bezier curve in order to determine
+      // the maximum x and y values
+      inflections = bbox.utils.cubic_bezier_inflections(bezier);
+
+      for(var i = 0; i < inflections.length; i++){
+        var p = bbox.utils.cubic_bezier_point(bezier, inflections[i]);
+        minx = Math.min(minx, p.x);
+        maxx = Math.max(maxx, p.x);
+        miny = Math.min(miny, p.y);
+        maxy = Math.max(maxy, p.y);
+      }
+
+      equal(box.x, minx);
+      equal(box.y, miny);
+      equal(box.w, maxx - minx);
+      equal(box.h, maxy - miny);
+    })
   </script>
 </html>

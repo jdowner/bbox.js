@@ -236,4 +236,75 @@ var bbox = {
       h: maxy - miny
     };
   },
+
+  /**
+   * Returns the bounding box of an SVG path.
+   *
+   * The path is required to use absolute co-ordinates and only use (M)ove,
+   * (L)ine, and (C)ubic Bezier.
+   *
+   */
+  path: function(path){
+    var box = null;
+
+    // Construct an index of the L, C, and M tokens.
+    var index = [];
+    for(var i = 0; i < path.length; i++){
+      if('LCM'.contains(path[i])){
+        index.push(i);
+      }
+    }
+
+    // Append the path length to the index to avoid special cases when
+    // determining the bounding boxes of each part of the path.
+    index.push(path.length);
+
+    var x0 = 0.0;
+    var y0 = 0.0;
+    for(var k = 1; k < index.length; k++){
+      var i = index[k - 1];
+      var j = index[k];
+      var current = path[i];
+      switch(current){
+        case 'M':
+          var chunk = path.substring(i + 2, j).split(' ');
+          x0 = parseFloat(chunk[0]);
+          y0 = parseFloat(chunk[1]);
+          break;
+        case 'L':
+          var chunk = path.substring(i + 2, j).split(' ');
+          var line = {
+            x0: x0,
+            y0: y0,
+            x1: parseFloat(chunk[0]),
+            y1: parseFloat(chunk[1])
+          };
+          var line_box = bbox.line(line);
+          box = (box != null) ? bbox.utils.merge(box, line_box) : line_box;
+          x0 = line.x1;
+          y0 = line.y1;
+          break;
+        case 'C':
+          var chunk = path.substring(i + 2, j);
+          chunk = chunk.replace(/,/g, '').split(' ');
+          var bezier = {
+            x0: x0,
+            y0: y0,
+            x1: parseFloat(chunk[0]),
+            y1: parseFloat(chunk[1]),
+            x2: parseFloat(chunk[2]),
+            y2: parseFloat(chunk[3]),
+            x3: parseFloat(chunk[4]),
+            y3: parseFloat(chunk[5]),
+          };
+          var bezier_box = bbox.cubic_bezier(bezier);
+          box = (box != null) ? bbox.utils.merge(box, bezier_box) : bezier_box;
+          x0 = bezier.x3;
+          y0 = bezier.y3;
+          break;
+      }
+    }
+
+    return box;
+  }
 }

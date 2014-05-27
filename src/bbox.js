@@ -1,6 +1,24 @@
 var bbox = {
   utils: {
     /**
+     * Returns a rectangle that encompasses both rectangles.
+     *
+     */
+    merge: function(rect1, rect2){
+      var minx = Math.min(rect1.x, rect2.x);
+      var maxx = Math.max(rect1.x + rect1.w, rect2.x + rect2.w);
+      var miny = Math.min(rect1.y, rect2.y);
+      var maxy = Math.max(rect1.y + rect1.h, rect2.y + rect2.h);
+
+      return {
+        x: minx,
+        y: miny,
+        w: maxx - minx,
+        h: maxy - miny
+      };
+    },
+
+    /**
     * Calculates the roots of a quadratic equation (a x^2 + b x + c = 0)
     *
     * The solution of the quadratic equation is typically given as,

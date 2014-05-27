@@ -275,5 +275,54 @@
       equal(box.w, 6);
       equal(box.h, 3);
     })
+
+
+    module("utils")
+
+    test("merge - degenerate", function(){
+      var rect = {x: -1, y: -2, w: 5, h: 6};
+      var box = bbox.utils.merge(rect, rect);
+      equal(box.x, rect.x);
+      equal(box.y, rect.y);
+      equal(box.w, rect.w);
+      equal(box.h, rect.h);
+    })
+
+    test("merge - overlap", function(){
+      var rectA = {x: 1, y: -1, w: 5, h: 6};
+      var rectB = {x: 3, y: -2, w: 5, h: 6};
+
+      var box = bbox.utils.merge(rectA, rectB);
+
+      equal(box.x, 1);
+      equal(box.y, -2);
+      equal(box.w, 7);
+      equal(box.h, 7);
+    })
+
+    test("merge - distinct", function(){
+      var rectA = {x: 1, y: -1, w: 5, h: 6};
+      var rectB = {x: -10, y: -2, w: 5, h: 6};
+
+      var box = bbox.utils.merge(rectA, rectB);
+
+      equal(box.x, -10);
+      equal(box.y, -2);
+      equal(box.w, 16);
+      equal(box.h, 7);
+    })
+
+    test("merge - commutativity", function(){
+      var rectA = {x: 1, y: -1, w: 5, h: 6};
+      var rectB = {x: -10, y: -2, w: 5, h: 6};
+
+      var boxA = bbox.utils.merge(rectA, rectB);
+      var boxB = bbox.utils.merge(rectB, rectA);
+
+      equal(boxA.x, boxB.x);
+      equal(boxA.y, boxB.y);
+      equal(boxA.w, boxB.w);
+      equal(boxA.h, boxB.h);
+    })
   </script>
 </html>

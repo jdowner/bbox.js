@@ -259,6 +259,8 @@ var bbox = {
     // determining the bounding boxes of each part of the path.
     index.push(path.length);
 
+    // Iterate over the index and construct the bounding box according to the
+    // contribution from each element.
     var x0 = 0.0;
     var y0 = 0.0;
     for(var k = 1; k < index.length; k++){
@@ -267,11 +269,16 @@ var bbox = {
       var current = path[i];
       switch(current){
         case 'M':
+          // The move element. Contributes nothing directly to the size of the
+          // bounding box. Just update the current position.
           var chunk = path.substring(i + 2, j).split(' ');
           x0 = parseFloat(chunk[0]);
           y0 = parseFloat(chunk[1]);
           break;
         case 'L':
+          // The line element. Draw a line from the current position to a new
+          // position. Determine the bounding box of the line and merge it with
+          // the current box. Update the current position.
           var chunk = path.substring(i + 2, j).split(' ');
           var line = {
             x0: x0,
@@ -285,6 +292,10 @@ var bbox = {
           y0 = line.y1;
           break;
         case 'C':
+          // The cubic Bezier element. Draw a curve from the current position to
+          // a new position according to 2 control points. Determine the
+          // bounding box of the cubic Bezier and merge is with the current box.
+          // Update the current position.
           var chunk = path.substring(i + 2, j);
           chunk = chunk.replace(/,/g, '').split(' ');
           var bezier = {
